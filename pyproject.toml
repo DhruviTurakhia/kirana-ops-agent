@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kirana-ops-agent"
+version = "0.1.0"
+description = "A Telegram-first agent that runs an Indian kirana store using the OpenAI Agents SDK."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Kirana Ops Agent contributors" }]
+dependencies = [
+  "openai-agents[sqlalchemy]>=0.6.0,<1",
+  "python-telegram-bot>=22.0,<23",
+  "pydantic-settings>=2.8,<3",
+  "reportlab>=4.2,<5",
+  "python-pptx>=1.0.2,<2",
+  "tzdata>=2025.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pypdf>=5.0,<7",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.25,<2",
+  "pytest-cov>=6.0,<8",
+  "ruff>=0.9,<1",
+]
+
+[project.scripts]
+kirana-bot = "kirana_agent.main:main"
+kirana-seed = "kirana_agent.seed:main"
+kirana-demo = "kirana_agent.demo:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kirana_agent"]
+
+[tool.hatch.build]
+include = [
+  "src/kirana_agent/**/*.py",
+  "src/kirana_agent/**/*.json",
+  "src/kirana_agent/**/*.sql",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]

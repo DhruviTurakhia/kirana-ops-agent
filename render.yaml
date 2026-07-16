@@ -1,0 +1,27 @@
+services:
+  - type: worker
+    name: kirana-ops-agent
+    runtime: docker
+    plan: starter
+    autoDeployTrigger: commit
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ALLOW_ALL_TELEGRAM_USERS
+        value: "false"
+      - key: AUTHORIZED_TELEGRAM_USER_IDS
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5.6-terra
+      - key: DATABASE_PATH
+        value: /app/persist/kirana.sqlite3
+      - key: AGENT_SESSION_DATABASE_PATH
+        value: /app/persist/agent_sessions.sqlite3
+      - key: ARTIFACT_OUTPUT_DIR
+        value: /app/persist/output
+    disk:
+      name: kirana-persist
+      mountPath: /app/persist
+      sizeGB: 1
