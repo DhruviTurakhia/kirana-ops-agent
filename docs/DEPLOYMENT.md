@@ -97,7 +97,17 @@ Then rotate any credentials it contained and commit the removal. Keep `.env.exam
 
 ## 4. Find the Telegram numeric user ID for locked mode
 
-Use Telegram's own Bot API so the ID is not shared with an unrelated third-party bot.
+The easiest method uses the Kirana bot itself, so the ID is not shared with an unrelated
+third-party bot.
+
+1. Run exactly one copy of the bot.
+2. Ask the new user to open a private chat with the bot and send `/start`.
+3. Because the user is not authorized yet, the bot replies with their numeric Telegram user ID.
+4. Copy that number into `AUTHORIZED_TELEGRAM_USER_IDS`, keeping any existing owner IDs and
+   separating multiple IDs with commas.
+5. Restart or redeploy the bot. Environment changes are not hot-reloaded.
+
+For first-time setup, or if the bot cannot be started yet, use Telegram's Bot API directly:
 
 1. Stop every running copy of this bot, including local terminals and hosted workers. Only one long-polling process should use a bot token at a time.
 2. Open your bot in Telegram and send it `/start`, followed by a short message such as `hello`. A bot cannot begin a private conversation until the user messages it.
@@ -347,9 +357,9 @@ Important cautions:
 | Startup says a setting is missing | Check the exact environment-variable names, remove accidental spaces, save them in the provider UI, and redeploy. |
 | Everyone is allowed unexpectedly | Set `ALLOW_ALL_TELEGRAM_USERS=false` exactly and restart/redeploy. Confirm an owner ID remains in `AUTHORIZED_TELEGRAM_USER_IDS`. |
 | `AUTHORIZED_TELEGRAM_USER_IDS` is rejected | Use numeric IDs only. Separate multiple values with commas; do not include `@` usernames. |
-| Telegram returns `409 Conflict` | Two processes are polling the same bot. Stop the local process, Docker container, or duplicate hosted worker. Run only one. |
+| Telegram returns `409 Conflict` | Two processes are polling the same bot. The process that detects the conflict now exits cleanly. Stop the extra local process, Docker container, or hosted worker before restarting; run only one. |
 | The bot is silent | Send the bot a message first, verify the token and numeric user ID, then inspect redacted logs. Also confirm the worker is running. |
-| An authorized user is refused | Repeat the Bot API ID lookup and make sure the full user ID—not a username or unrelated chat ID—is in the allowlist. |
+| An authorized user is refused | Send `/start` in a private chat and copy the user ID shown by the bot. Make sure that full user ID—not the bot ID, username, or unrelated chat ID—is in the allowlist, then restart. |
 | OpenAI returns `401` | The API key is invalid, revoked, or copied incorrectly. Create a new project key, update the environment, and redeploy. |
 | The configured model is unavailable | Set `OPENAI_MODEL` to a model accessible to the current API project, save, and redeploy. |
 | Database resets after deployment | Confirm the disk exists and every database path starts with `/app/persist/`. Paths elsewhere in the container are ephemeral. |

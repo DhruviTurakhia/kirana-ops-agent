@@ -43,6 +43,10 @@ uv run kirana-seed
 uv run kirana-bot
 ```
 
+Run only one bot process for a Telegram token. In locked mode, an unauthorized user can send
+`/start`; the private-bot reply shows the numeric ID to add to `AUTHORIZED_TELEGRAM_USER_IDS`.
+Restart the bot after changing the allowlist.
+
 For a short public demo window, keep the normal allowlist saved, set `ALLOW_ALL_TELEGRAM_USERS=true`, and restart the bot. **Every Telegram user then has full store access and can spend OpenAI credits.** Set it back to `false` and restart immediately after the demo; the setting is not timed or hot-reloaded.
 
 The OpenAI API key must come from an API project; a ChatGPT subscription does not automatically expose a reusable API key. Never commit `.env`.

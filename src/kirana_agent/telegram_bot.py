@@ -11,6 +11,7 @@ from typing import Any
 
 from telegram import Update
 from telegram.constants import ChatAction, ParseMode
+from telegram.error import Conflict
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -96,10 +97,19 @@ class KiranaTelegramBot:
         )
 
     async def _reject_unauthorized(self, update: Update) -> None:
-        if update.effective_message:
-            await update.effective_message.reply_text(
-                "This bot is private. Ask the store owner to add your numeric Telegram user ID."
+        message = update.effective_message
+        if message is None:
+            return
+        user = update.effective_user
+        if user is None:
+            response = "This bot is private. Ask the store owner to authorize your account."
+        else:
+            response = (
+                f"This bot is private. Your numeric Telegram user ID is {user.id}. "
+                "Send this number to the store owner so they can add it to "
+                "AUTHORIZED_TELEGRAM_USER_IDS, then wait for the bot to restart."
             )
+        await message.reply_text(response)
 
     async def start(self, update: Update, _context: ContextTypes.DEFAULT_TYPE) -> None:
         if not self._authorized(update):
@@ -278,4 +288,11 @@ class KiranaTelegramBot:
     async def on_error(
         self, update: object, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
+        if isinstance(context.error, Conflict):
+            logger.critical(
+                "Telegram polling stopped: another process is using this bot token. "
+                "Stop the duplicate local or deployed instance and run exactly one poller."
+            )
+            self.application.stop_running()
+            return
         logger.exception("Unhandled Telegram application error", exc_info=context.error)
